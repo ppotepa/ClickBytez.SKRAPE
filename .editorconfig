@@ -1,0 +1,7 @@
+﻿[*.{cs,vb}]
+
+# IDE0003: Remove qualification
+dotnet_diagnostic.IDE0003.severity = silent
+
+# Default severity for analyzer diagnostics with category 'Style'
+dotnet_analyzer_diagnostic.category-Style.severity = none
