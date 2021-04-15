@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickBytez.Scrapers.WP", "ClickBytez.Scrapers.WP\ClickBytez.Scrapers.WP.csproj", "{DA6A0430-C84F-4992-AB53-3B860815ADB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickBytez.SKRAPE.Core", "ClickBytez.SKRAPE.Core\ClickBytez.SKRAPE.Core.csproj", "{95EE6D67-E7E9-413B-BE70-818DB74B57B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +36,14 @@ Global
 		{1B517FFB-8777-40E0-B643-B518FC5E4B43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B517FFB-8777-40E0-B643-B518FC5E4B43}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B517FFB-8777-40E0-B643-B518FC5E4B43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA6A0430-C84F-4992-AB53-3B860815ADB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6A0430-C84F-4992-AB53-3B860815ADB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6A0430-C84F-4992-AB53-3B860815ADB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6A0430-C84F-4992-AB53-3B860815ADB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95EE6D67-E7E9-413B-BE70-818DB74B57B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95EE6D67-E7E9-413B-BE70-818DB74B57B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95EE6D67-E7E9-413B-BE70-818DB74B57B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95EE6D67-E7E9-413B-BE70-818DB74B57B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

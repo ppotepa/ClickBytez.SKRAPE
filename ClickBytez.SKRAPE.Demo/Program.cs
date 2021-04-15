@@ -1,26 +1,36 @@
 ﻿using Autofac;
+using ClickBytez.SKRAPE.Core;
 using ClickBytez.SKRAPE.Engine;
-using Microsoft.Extensions.Configuration;
+using ClickBytez.SKRAPE.Engine.Modules;
+using System.Threading;
 
 namespace ClickBytez.SKRAPE.Demo
 {
     class Program
     {
-        static IConfiguration SKRAPEConfig(IComponentContext ctx) => new ConfigurationBuilder().AddJsonFile("skrapesettings.json").Build();
-        static IContainer Root => GetCompositionRoot();
-        static ContainerBuilder builder = new ContainerBuilder();
+        private static readonly ContainerBuilder Builder = new ContainerBuilder();
+        private static readonly IContainer Root = GetCompositionRoot();
 
         private static IContainer GetCompositionRoot()
         {
-            builder.Register(SKRAPEConfig);
-            
-            builder.RegisterType<SkrapeEngine>();
+            ScrapeEngineConfiguration config = new ScrapeEngineConfiguration();
+            Builder.RegisterModule<Modules.ConfigurationModule>();
+            Builder.RegisterModule<Modules.ProvidersModule>();
+            Builder.RegisterModule<Modules.FactoriesModule>();
+            Builder.RegisterType<SkrapeEngine>().SingleInstance();
 
-            return builder.Build();
+            return Builder.Build();
         }
+
         static void Main(string[] args)
         {
-            Root.Resolve<SkrapeEngine>().Start();
+            SkrapeEngine Engine = Root.Resolve<SkrapeEngine>().Initialize();
+            bool started = Engine.Start();
+
+            while (Engine.IsRunning)
+            {
+                Thread.Sleep(100);
+            }
         }
     }
 }

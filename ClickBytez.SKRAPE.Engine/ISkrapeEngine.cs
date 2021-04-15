@@ -3,7 +3,7 @@
     public interface ISkrapeEngine
     {
         bool Initialized { get; }
-        void Initialize();
-        void Start();
+        SkrapeEngine Initialize();
+        bool Start();
     }
 }

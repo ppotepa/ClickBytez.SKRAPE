@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>ClickBytez.SKRAPE.Scrapers.WP</AssemblyName>
+    <RootNamespace>ClickBytez.SKRAPE.Scrapers.WP</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ClickBytez.SKRAPE.Engine\ClickBytez.SKRAPE.Engine.csproj" />
+  </ItemGroup>
+
+</Project>
