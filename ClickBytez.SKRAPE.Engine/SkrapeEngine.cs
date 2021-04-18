@@ -1,26 +1,24 @@
 ﻿using ClickBytez.SKRAPE.Core;
+using ClickBytez.SKRAPE.Core.Bus;
 using ClickBytez.SKRAPE.Core.Extensions;
-using ClickBytez.SKRAPE.Core.Scraping;
-using ClickBytez.Tools.Enumerable;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 using System;
-using System.Linq;
 using System.Threading;
 
 namespace ClickBytez.SKRAPE.Engine
 {
     public sealed class SkrapeEngine : ISkrapeEngine
     {
-        public readonly IScrapersProvider ScrapersProvider;
-        private readonly ScrapeEngineConfiguration Config;
-        private readonly Func<Type, IScraper> getScraper;
-        private int Ticks = 0;
+        private readonly IScrapersBus Bus;
+        private readonly ScrapeEngineConfiguration Config;       
+        private readonly ILogger Logger;
 
-        public SkrapeEngine(IConfiguration configuration, IScrapersProvider scrapersProvider, Func<Type, IScraper> factory)
+        public SkrapeEngine(IConfiguration configuration, IScrapersBus bus, ILogger logger)
         {
-            Config = configuration.GetSkrapeEngineConfig();
-            ScrapersProvider = scrapersProvider;
-            getScraper = factory;
+            this.Config = configuration.GetSkrapeEngineConfig();
+            this.Bus = bus;
+            this.Logger = logger;
         }
 
         public bool Initialized { get; private set; }
@@ -32,30 +30,31 @@ namespace ClickBytez.SKRAPE.Engine
             return this;
         }
 
-        public bool Start() 
+        public SkrapeEngine Start() 
         {
             if (Initialized is false)
                 throw new SkrapeEngineNotInitializedException("SKRAPE was not initialized.");
+            
+            ThreadPool.QueueUserWorkItem(this.MainThread);
+            
+            while (IsRunning is false)
+            {
+                Thread.Sleep(100);
+            }
 
-            IsRunning = true;
-
-            return ThreadPool.QueueUserWorkItem(this.MainThread);
+            return this;
         }
 
         private void MainThread(object stateInfo) 
         {
+            IsRunning = true;
+
             while (IsRunning)
             {
-                ScrapersProvider.Scrapers.ForEach(scraper => 
-                {
-                    IScraper instance = this.getScraper(scraper) as IScraper;
-                    ThreadPool.QueueUserWorkItem(instance.Scrape);
-                });
-
-                Thread.Sleep(100);
-                Console.WriteLine($"Ticks : {Ticks++}");
-            }
-           
+                this.Bus.Run();
+                Thread.Sleep(50);
+                Console.Clear();
+            }           
         }
     }
 }

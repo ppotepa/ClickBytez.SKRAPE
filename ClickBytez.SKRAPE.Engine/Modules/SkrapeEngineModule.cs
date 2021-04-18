@@ -1,16 +1,19 @@
 ﻿using Autofac;
 using AutofacSerilogIntegration;
+using ClickBytez.SKRAPE.Core.Bus;
 using ClickBytez.SKRAPE.Core.Extensions;
+using ClickBytez.SKRAPE.Core.Providers;
 using ClickBytez.SKRAPE.Core.Scraping;
-using ClickBytez.Tools.Enumerable;
+using ClickBytez.Tools.Extensions.Enumerable;
+using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;
 using Serilog;
-using Serilog.Core;
 using System;
+using System.Net.Http;
 
 namespace ClickBytez.SKRAPE.Engine.Modules
 {
-    public static class Modules
+    public static class SkrapeEngineModule
     {
         static readonly IConfiguration AppConfig = new ConfigurationBuilder().AddJsonFile("skrapesettings.json").Build();
         static readonly IScrapersProvider ScrapersProvider = new ScrapersProvider(AppConfig);
@@ -34,16 +37,16 @@ namespace ClickBytez.SKRAPE.Engine.Modules
         {
             protected override void Load(ContainerBuilder builder)
             {
-                var logger = Log.Logger = new LoggerConfiguration()
-                .WriteTo
-                .Console()
-                .CreateLogger();
+                ILogger logger = Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
                 builder.RegisterLogger(logger);
-
                 builder.Register(x => ScrapersProvider)
                     .AsImplementedInterfaces()
                     .SingleInstance();
+
+                builder.RegisterType<NotificationBus>()
+                    .AsImplementedInterfaces()
+                    .InstancePerDependency();
 
                 base.Load(builder);
             }
@@ -55,7 +58,7 @@ namespace ClickBytez.SKRAPE.Engine.Modules
             {
                 base.Load(builder);
                 string path = AppConfig.GetSkrapeEngineConfig().ScrapersAbsolutePath;
-
+               
                 ScrapersProvider.Scrapers.ForEach((scraper) => 
                 {
                     builder.RegisterType(scraper).InstancePerDependency().AsSelf();
@@ -63,12 +66,26 @@ namespace ClickBytez.SKRAPE.Engine.Modules
 
                 builder.Register<Func<Type, IScraper>>(context =>
                 {
-                    var ctx = context.Resolve<IComponentContext>();
-                    return scraperType =>
+                    IComponentContext ctx = context.Resolve<IComponentContext>();
+                    return (scraperType) =>
                     {
-                        return  (IScraper)ctx.Resolve(scraperType);
+                        IScraper scraper =  (IScraper) ctx.Resolve(scraperType);
+                        scraper.UseContext(ctx);
+                        return scraper;
                     };
                 });
+
+                builder.RegisterType<ScrapersBus>()
+                    .AsImplementedInterfaces()
+                    .InstancePerDependency();
+
+                builder.RegisterType<HttpClient>()
+                   .AsSelf()
+                   .InstancePerDependency();
+
+                builder.RegisterType<HtmlDocument>()
+                  .AsSelf()
+                  .InstancePerDependency();
             }
         }
     }

@@ -1,7 +1,6 @@
 ﻿using Autofac;
-using ClickBytez.SKRAPE.Core;
 using ClickBytez.SKRAPE.Engine;
-using ClickBytez.SKRAPE.Engine.Modules;
+using ClickBytez.SKRAPE.Engine.Extensions;
 using System.Threading;
 
 namespace ClickBytez.SKRAPE.Demo
@@ -13,21 +12,14 @@ namespace ClickBytez.SKRAPE.Demo
 
         private static IContainer GetCompositionRoot()
         {
-            ScrapeEngineConfiguration config = new ScrapeEngineConfiguration();
-
-            Builder.RegisterModule<Modules.ConfigurationModule>();
-            Builder.RegisterModule<Modules.ProvidersModule>();
-            Builder.RegisterModule<Modules.FactoriesModule>();
-            Builder.RegisterType<SkrapeEngine>().SingleInstance();
-            
+            Builder.RegisterSkrapeEngine();
             return Builder.Build();
         }
 
         static void Main(string[] args)
         {
-            SkrapeEngine Engine = Root.Resolve<SkrapeEngine>().Initialize();
-            bool started = Engine.Start();
-          
+            SkrapeEngine Engine = Root.Resolve<SkrapeEngine>().Initialize().Start();
+
             while (Engine.IsRunning)
             {
                 Thread.Sleep(100);

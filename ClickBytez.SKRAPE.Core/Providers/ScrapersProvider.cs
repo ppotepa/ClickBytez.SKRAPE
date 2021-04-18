@@ -1,19 +1,13 @@
 ﻿using ClickBytez.SKRAPE.Core.Extensions;
+using ClickBytez.SKRAPE.Core.Scraping;
 using ClickBytez.Tools.Assemblies;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace ClickBytez.SKRAPE.Core.Scraping
+namespace ClickBytez.SKRAPE.Core.Providers
 {
-    public interface IScrapersProvider
-    {
-        IEnumerable<Assembly> Assemblies { get; }
-        IEnumerable<byte[]> RawAssemblies { get; }
-        IEnumerable<Type> Scrapers { get; }
-    }
-
     public class ScrapersProvider : IScrapersProvider
     {
         private readonly ScrapeEngineConfiguration Config;

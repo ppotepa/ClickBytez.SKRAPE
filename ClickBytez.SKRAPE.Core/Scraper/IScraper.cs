@@ -1,11 +1,15 @@
-﻿namespace ClickBytez.SKRAPE.Core.Scraping
+﻿using Autofac;
+
+namespace ClickBytez.SKRAPE.Core.Scraping
 {
-    public interface IScraper<out TResult> : IScraper where TResult : IScrapeResult
+    public interface IScraper<TResult> : IScraper where TResult : IScrapeResult
     {
-        TResult Result { get; }
+        new TResult Result { get; }
     }
+
     public interface IScraper
     {
         void Scrape(object @object = null);
+        object Result { get; }
     }
 }

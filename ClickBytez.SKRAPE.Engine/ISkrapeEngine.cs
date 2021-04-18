@@ -4,6 +4,6 @@
     {
         bool Initialized { get; }
         SkrapeEngine Initialize();
-        bool Start();
+        SkrapeEngine Start();
     }
 }
