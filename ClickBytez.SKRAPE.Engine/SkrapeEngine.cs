@@ -13,24 +13,21 @@ namespace ClickBytez.SKRAPE.Engine
     {
         public readonly IScrapersProvider ScrapersProvider;
         private readonly ScrapeEngineConfiguration Config;
-        private readonly Func<Type, IScraper> Factory;
+        private readonly Func<Type, IScraper> getScraper;
         private int Ticks = 0;
 
         public SkrapeEngine(IConfiguration configuration, IScrapersProvider scrapersProvider, Func<Type, IScraper> factory)
         {
             Config = configuration.GetSkrapeEngineConfig();
             ScrapersProvider = scrapersProvider;
-            Factory = factory;
+            getScraper = factory;
         }
 
         public bool Initialized { get; private set; }
         public bool IsRunning { get; internal set; }
-        private Type[] AvailableScrapers { get; set; }
 
         public SkrapeEngine Initialize() 
         {
-            this.AvailableScrapers = ScrapersProvider.Scrapers.ToArray();
-
             Initialized = true;
             return this;
         }
@@ -51,14 +48,14 @@ namespace ClickBytez.SKRAPE.Engine
             {
                 ScrapersProvider.Scrapers.ForEach(scraper => 
                 {
-                    IScraper result = Factory(scraper);
-                    //Scraper instance = ActivatorUtilities.CreateInstance(ServiceProvider, scraper) as Scraper;
-                    //instance.Start();
+                    IScraper instance = this.getScraper(scraper) as IScraper;
+                    ThreadPool.QueueUserWorkItem(instance.Scrape);
                 });
 
                 Thread.Sleep(100);
                 Console.WriteLine($"Ticks : {Ticks++}");
             }
+           
         }
     }
 }

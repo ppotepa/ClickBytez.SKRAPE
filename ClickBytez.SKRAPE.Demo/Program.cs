@@ -14,11 +14,12 @@ namespace ClickBytez.SKRAPE.Demo
         private static IContainer GetCompositionRoot()
         {
             ScrapeEngineConfiguration config = new ScrapeEngineConfiguration();
+
             Builder.RegisterModule<Modules.ConfigurationModule>();
             Builder.RegisterModule<Modules.ProvidersModule>();
             Builder.RegisterModule<Modules.FactoriesModule>();
             Builder.RegisterType<SkrapeEngine>().SingleInstance();
-
+            
             return Builder.Build();
         }
 
@@ -26,7 +27,7 @@ namespace ClickBytez.SKRAPE.Demo
         {
             SkrapeEngine Engine = Root.Resolve<SkrapeEngine>().Initialize();
             bool started = Engine.Start();
-
+          
             while (Engine.IsRunning)
             {
                 Thread.Sleep(100);

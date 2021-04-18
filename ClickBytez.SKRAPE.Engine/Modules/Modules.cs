@@ -1,32 +1,31 @@
-﻿
-
-using Autofac;
-using ClickBytez.SKRAPE.Core;
+﻿using Autofac;
+using AutofacSerilogIntegration;
 using ClickBytez.SKRAPE.Core.Extensions;
 using ClickBytez.SKRAPE.Core.Scraping;
 using ClickBytez.Tools.Enumerable;
-using ClickBytez.Tools.Scanners;
 using Microsoft.Extensions.Configuration;
+using Serilog;
+using Serilog.Core;
 using System;
-using System.IO;
-using System.Reflection;
 
 namespace ClickBytez.SKRAPE.Engine.Modules
 {
     public static class Modules
     {
         static readonly IConfiguration AppConfig = new ConfigurationBuilder().AddJsonFile("skrapesettings.json").Build();
-
+        static readonly IScrapersProvider ScrapersProvider = new ScrapersProvider(AppConfig);
+        
         public class ConfigurationModule : Autofac.Module
         {
             public ConfigurationModule() { }
 
             protected override void Load(ContainerBuilder builder)
             {
+             
                 builder.Register(x => AppConfig)
-                    .AsImplementedInterfaces()
-                    .OnActivating(e => Console.WriteLine(e.Context.GetHashCode()));
-
+                    .InstancePerDependency()
+                    .AsImplementedInterfaces();
+               
                 base.Load(builder);
             }
         }
@@ -35,47 +34,40 @@ namespace ClickBytez.SKRAPE.Engine.Modules
         {
             protected override void Load(ContainerBuilder builder)
             {
-                builder
-                    .RegisterType<ScrapersProvider>()
+                var logger = Log.Logger = new LoggerConfiguration()
+                .WriteTo
+                .Console()
+                .CreateLogger();
+
+                builder.RegisterLogger(logger);
+
+                builder.Register(x => ScrapersProvider)
                     .AsImplementedInterfaces()
                     .SingleInstance();
-
-                builder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies())
-                   .Where(t => t.IsSubclassOf(typeof(Scraper)))
-                   .InstancePerDependency()
-                   .InstancePerRequest();
 
                 base.Load(builder);
             }
         }
 
-        public class FactoriesModule : Autofac.Module
+        public class FactoriesModule : Module
         {
-            public IScrapersProvider Provider { get; set; }
-            
             protected override void Load(ContainerBuilder builder)
             {
                 base.Load(builder);
-                
-                ScrapeEngineConfiguration cfg = AppConfig.GetSkrapeEngineConfig();
-                AssemblyScanner scanner = new AssemblyScanner(cfg.ScrapersAbsolutePath);
-     
-                scanner.Files.ForEach(fileName => 
+                string path = AppConfig.GetSkrapeEngineConfig().ScrapersAbsolutePath;
+
+                ScrapersProvider.Scrapers.ForEach((scraper) => 
                 {
-                    byte[] fileRaw = File.ReadAllBytes(fileName);
-                    Assembly assembly = AppDomain.CurrentDomain.Load(fileRaw);
-
-                    builder.RegisterTypes(scanner)
-                    .Where(type => type.IsSubclassOf(typeof(Scraper)))
-                    .AsSelf();
-
+                    builder.RegisterType(scraper).InstancePerDependency().AsSelf();
                 });
-                
 
                 builder.Register<Func<Type, IScraper>>(context =>
                 {
-                    //var s = new WPImageScraper(null, null);
-                    return scraperType => (IScraper) context.Resolve(scraperType);
+                    var ctx = context.Resolve<IComponentContext>();
+                    return scraperType =>
+                    {
+                        return  (IScraper)ctx.Resolve(scraperType);
+                    };
                 });
             }
         }

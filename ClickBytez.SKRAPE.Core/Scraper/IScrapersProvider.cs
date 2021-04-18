@@ -1,73 +1,67 @@
 ﻿using ClickBytez.SKRAPE.Core.Extensions;
-using ClickBytez.Tools.Scanners;
+using ClickBytez.Tools.Assemblies;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace ClickBytez.SKRAPE.Core.Scraping
 {
     public interface IScrapersProvider
     {
-        IEnumerable<Type> Scrapers { get; }
         IEnumerable<Assembly> Assemblies { get; }
         IEnumerable<byte[]> RawAssemblies { get; }
+        IEnumerable<Type> Scrapers { get; }
     }
 
     public class ScrapersProvider : IScrapersProvider
     {
+        private readonly ScrapeEngineConfiguration Config;
+        private AssemblyScanner<IScraper> scanner;
+        private IEnumerable<Assembly> assemblies = null;
+        private IEnumerable<byte[]> rawAssemblies = null;
+        private IEnumerable<Type> scrapers = null;
+
         public ScrapersProvider(IConfiguration config)
         {
             this.Config = config.GetSkrapeEngineConfig();
         }
-
-        private IEnumerable<Type> scrapers = null;
-        private IEnumerable<Assembly> assemblies = null;
-        private IEnumerable<byte[]> rawAssemblies = null;
-
-        private readonly ScrapeEngineConfiguration Config;
-
-        public IEnumerable<Type> Scrapers
-        {
-            get 
-            {
-                if(scrapers is null)
-                    scrapers = new AssemblyScanner(Config.ScrapersAbsolutePath).ScanForTypes<Scraper>().ToArray();
-                return scrapers;
-            }
-            set 
-            {
-                scrapers = value;
-            }
-        }
-
         public IEnumerable<Assembly> Assemblies
         {
             get
             {
                 if (assemblies is null)
-                    assemblies = new AssemblyScanner(Config.ScrapersAbsolutePath).ScanWithSubclass<Scraper>().ToArray();
+                    assemblies = Scanner.Assemblies;
                 return assemblies;
             }
-            set
-            {
-                assemblies = value;
-            }
+
+            set => assemblies = value;           
         }
 
-        public IEnumerable<byte[]> RawAssemblies
+        public IEnumerable<byte[]> RawAssemblies => throw new NotImplementedException();
+
+        public IEnumerable<Type> Scrapers
         {
             get
             {
-                if (rawAssemblies is null)
-                    rawAssemblies = new AssemblyScanner(Config.ScrapersAbsolutePath).GetRaw().ToArray();
-                return rawAssemblies;
+                if (scrapers is null)
+                    scrapers = Scanner.FoundTypes;
+                return scrapers;
             }
-            set
+            set => scrapers = value;
+        }
+
+        private AssemblyScanner<IScraper> Scanner
+        {
+            get 
             {
-                rawAssemblies = value;
+                if (scanner is null) 
+                    scanner = new AssemblyScanner<IScraper>(this.Config.ScrapersAbsolutePath);
+                return scanner;
             }
+
+            set => scanner = value;
+           
         }
     }
 

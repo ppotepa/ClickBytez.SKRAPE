@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath></OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.32" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ClickBytez.SKRAPE.Core\ClickBytez.SKRAPE.Core.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(SolutionDir)ClickBytez.SKRAPE.Demo\bin\Debug\netcoreapp3.1\Scrapers\&quot; /F /Y &#xD;&#xA;xcopy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(SolutionDir)ClickBytez.SKRAPE.Demo\bin\Debug\netcoreapp3.1\Scrapers\&quot; /F /Y" />
+  </Target>
+
+</Project>
